@@ -216,11 +216,10 @@ risc8-5stage-timer-adc-soc/
 │   ├── sar_adc_ctrl.v
 │   ├── sync_fifo.v
 │   ├── program.hex
-│   ├── soc_demo.hex             # empty supplied file; not the SoC firmware
-│   └── soc_demo.mem             # pre-assembled SoC firmware
+│   └── soc_demo.mem    
 ├── tb/
 │   ├── tb_risc8_soc.v
-│   └── afe_model.v              # behavioral model; never synthesize
+│   └── afe_model.v         
 └── screenshot/
     ├── F1_Design Source.png
     ├── F2_Simulation.png
