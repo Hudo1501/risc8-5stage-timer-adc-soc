@@ -197,27 +197,35 @@ This release contains the **actual uploaded RTL, behavioral AFE, system testbenc
 ```text
 risc8-5stage-timer-adc-soc/
 ├── README.md
-├── AUDIT_REPORT.md
-├── files_soc.f
-├── run_soc.sh
-├── run_soc.bat
-├── soc_demo.mem                 # exact supplied firmware image
+├── Presentation.pdf
 ├── rtl/
 │   ├── risc8_soc.v
 │   ├── risc8_5stage_core.v
-│   ├── alu.v  control_unit.v  hazard_unit.v
-│   ├── regfile.v  imem.v  dmem.v
-│   └── periph/
-│       ├── timer_adc8_cpu_if.v  timer_adc8_top.v
-│       ├── apb_regs8.v  timer8.v
-│       └── sar_adc_ctrl.v  sync_fifo.v
+│   ├── alu.v
+│   ├── control_unit.v
+│   ├── hazard_unit.v
+│   ├── regfile.v
+│   ├── imem.v
+│   ├── dmem.v
+│   ├── timer_adc8_cpu_if.v
+│   ├── timer_adc8_top.v
+│   ├── apb_regs8.v
+│   ├── timer8.v
+│   ├── sar_adc_ctrl.v
+│   ├── sync_fifo.v
+│   ├── program.hex
+│   ├── soc_demo.hex             # empty supplied file; not the SoC firmware
+│   └── soc_demo.mem             # pre-assembled SoC firmware
 ├── tb/
 │   ├── tb_risc8_soc.v
-│   └── afe_model.v             # behavioral model; never synthesize
-├── sw/
-│   └── program.hex             # separately supplied CPU program image
-├── docs/
+│   └── afe_model.v              # behavioral model; never synthesize
 └── screenshot/
+    ├── F1_Design Source.png
+    ├── F2_Simulation.png
+    ├── F3_TCL Console.png
+    ├── F4_Elaborated Design.png
+    ├── F5_Synthesized Design.png
+    └── F6_Ultilization.png
 ```
 
 ## 7. Getting started
@@ -228,36 +236,41 @@ risc8-5stage-timer-adc-soc/
 - Optional GTKWave for VCD viewing.
 - No Python assembler is needed to run the **supplied** SoC firmware: `soc_demo.mem` is already assembled and is read directly by `imem.v`.
 
-Clone/download this **integrated** repository (the older CPU-only repository cannot run this SoC as-is), and run from its root:
+Clone/download this **integrated** repository (the older CPU-only repository cannot run this SoC as-is). From the repository root, change into `rtl/` so the testbench can read `soc_demo.mem` without modifying the source:
 
 ```bash
-iverilog -g2005 -s tb_risc8_soc -o soc.vvp -c files_soc.f
+cd rtl
+iverilog -g2005 -s tb_risc8_soc -o soc.vvp *.v ../tb/afe_model.v ../tb/tb_risc8_soc.v
 vvp -n soc.vvp
 ```
 
-Or launch the provided scripts:
+These commands use a shell that expands `*.v`, such as Bash or Git Bash. In Windows PowerShell, run the following from the repository root instead:
 
-```bash
-bash run_soc.sh            # Linux / macOS / Git Bash
-# run_soc.bat             # Windows Command Prompt
+```powershell
+Set-Location rtl
+$rtlSources = Get-ChildItem -Filter *.v | Select-Object -ExpandProperty Name
+iverilog -g2005 -s tb_risc8_soc -o soc.vvp $rtlSources ../tb/afe_model.v ../tb/tb_risc8_soc.v
+vvp -n soc.vvp
 ```
 
-To produce a VCD waveform:
+To produce a VCD waveform, run from `rtl/` in Bash or Git Bash:
 
 ```bash
-iverilog -g2005 -DDUMP -s tb_risc8_soc -o soc.vvp -c files_soc.f
+iverilog -g2005 -DDUMP -s tb_risc8_soc -o soc.vvp *.v ../tb/afe_model.v ../tb/tb_risc8_soc.v
 vvp -n soc.vvp
 gtkwave risc8_soc.vcd
 ```
 
-The simulation generates `io_trace.csv` in the working directory. `soc_demo.mem` must be readable from that directory because both `risc8_soc.v` and `tb_risc8_soc.v` use it as the `IMEM_FILE` default/override. Unlike the previous README, **do not rename this file `soc_demo.hex`**.
+In PowerShell, use `$rtlSources` in place of `*.v` in the waveform compilation command above.
+
+The simulation generates `io_trace.csv`, and optionally `risc8_soc.vcd`, in the working directory (`rtl/` for these commands). Both `risc8_soc.v` and `tb/tb_risc8_soc.v` specify `"soc_demo.mem"` as the firmware filename, so run simulation where that file is readable. The firmware is tracked at `rtl/soc_demo.mem`; `rtl/soc_demo.hex` is an empty supplied file and must not be used as its replacement.
 
 ### Vivado 2018.3
 
-1. Create an RTL project and add the eight root `rtl/*.v` CPU/SoC modules and six `rtl/periph/*.v` modules as **Design Sources**.
+1. Create an RTL project and add all 14 Verilog files in `rtl/` (eight CPU/SoC modules and six peripheral modules) as **Design Sources**.
 2. Set `risc8_soc` as the synthesis top.
 3. Add `tb/tb_risc8_soc.v` and `tb/afe_model.v` as **Simulation Sources**, and set `tb_risc8_soc` as the simulation top.
-4. Add `soc_demo.mem` as a memory initialization source or ensure it is available in the simulator's working directory. Check the Vivado simulation log if `$readmemh` cannot open it.
+4. Add `rtl/soc_demo.mem` as a memory initialization source or ensure it is available in the simulator's working directory. Check the Vivado simulation log if `$readmemh` cannot open it.
 5. Run Behavioral Simulation. Optionally add `-DDUMP` to Icarus to export a VCD; Vivado XSim already provides its waveform viewer.
 6. Run Synthesis separately, without the non-synthesizable AFE behavioral model.
 
@@ -322,13 +335,16 @@ The waveform screenshot also shows `halted=1`, `fail_cnt=0`, `pass_cnt=22`, `cyc
 
 ### Simulation artifacts
 
-Store a small, reproducible evidence set under `screenshot/` rather than committing tool-generated project/cache directories:
+The uploaded evidence is stored under `screenshot/`:
 
-- [`elaborated_soc.png`](screenshot/elaborated_soc.png): `risc8_soc` containing `u_cpu` and `u_tadc`.
-- [`synthesized_soc.png`](screenshot/synthesized_soc.png): synthesized connections between the CPU, peripheral and output buffers.
-- [`utilization.png`](screenshot/utilization.png): Xilinx resource usage by hierarchy.
-- [`soc_sim_console.png`](screenshot/soc_sim_console.png): 22-check PASS log.
-- [`soc_waveform.png`](screenshot/soc_waveform.png): IRQ, ADC, timer/PWM and counters around simulation completion.
+- [F1_Design Source.png](screenshot/F1_Design%20Source.png): project design sources.
+- [F2_Simulation.png](screenshot/F2_Simulation.png): simulation waveform.
+- [F3_TCL Console.png](screenshot/F3_TCL%20Console.png): simulation console output.
+- [F4_Elaborated Design.png](screenshot/F4_Elaborated%20Design.png): elaborated design.
+- [F5_Synthesized Design.png](screenshot/F5_Synthesized%20Design.png): synthesized design.
+- [F6_Ultilization.png](screenshot/F6_Ultilization.png): resource utilization (filename spelling preserved).
+
+The project presentation is available as [Presentation.pdf](Presentation.pdf).
 
 ## 10. Vivado synthesis
 
@@ -345,7 +361,7 @@ The screenshot also reports **25 bonded IOBs** and **1 BUFGCTRL** for the total 
 ### Reproducing synthesis in Vivado
 
 1. Create a new **RTL Project** and select your actual target FPGA device/board.
-2. Add `rtl/*.v` plus all six `rtl/periph/*.v` source files.
+2. Add all 14 `rtl/*.v` source files; the peripheral modules are also directly under `rtl/`.
 3. Set **`risc8_soc` as the synthesis top** (not `tb_risc8_soc`).
 4. Keep the AFE model, system testbench and assertions in the **Simulation Sources** set only.
 5. Set **`tb_risc8_soc` as the simulation top** and ensure firmware memory initialization paths are correct.
