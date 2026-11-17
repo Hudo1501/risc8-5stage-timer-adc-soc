@@ -1,0 +1,44 @@
+# Simulation outputs
+*.vcd
+*.vvp
+*.fst
+*.wdb
+*.wcfg
+*.vpd
+*.saif
+io_trace.csv
+dump.txt
+xsim.dir/
+xsim.covdb/
+
+# Vivado generated files and project directories
+.Xil/
+*.cache/
+*.hw/
+*.ip_user_files/
+*.runs/
+*.sim/
+*.gen/
+*.bit
+*.bin
+*.ltx
+*.dcp
+*.log
+*.jou
+*.str
+vivado_*.backup.*
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# OS and editor temporary files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+
+# Firmware inputs (*.hex and *.mem), RTL, constraints and screenshots
+# are source assets and must remain tracked.

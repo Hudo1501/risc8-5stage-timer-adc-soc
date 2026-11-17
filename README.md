@@ -196,6 +196,8 @@ This release contains the **actual uploaded RTL, behavioral AFE, system testbenc
 
 ```text
 risc8-5stage-timer-adc-soc/
+├── .gitignore
+├── LICENSE
 ├── README.md
 ├── Presentation.pdf
 ├── rtl/
@@ -393,4 +395,4 @@ Possible extensions: CPU interrupt entry/return and a small ISR; an interrupt-aw
 
 ### Credits and license
 
-CPU baseline: [original RISC-8 5-stage CPU repository](https://github.com/Hudo1501/8bit-5stage-risc-cpu-verilog). Before distributing, review ownership and licenses for all imported HDL, documentation and screenshots. **No license file was uploaded**, so this review package does not invent a license or grant reuse rights.
+CPU baseline: [original RISC-8 5-stage CPU repository](https://github.com/Hudo1501/8bit-5stage-risc-cpu-verilog). This project is licensed under the [MIT License](LICENSE), consistent with the original CPU repository. The copyright notice is retained in `LICENSE`.
